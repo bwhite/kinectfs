@@ -1,0 +1,38 @@
+package kinectfs;
+
+message KinectMessage {
+    optional KinectFrame frame = 1;
+    optional KinectTiltState tilt_state = 2;
+
+    message KinectFrame {
+        enum FrameType {
+            FREENECT_VIDEO_RGB = 0;
+            FREENECT_VIDEO_BAYER = 1;
+            FREENECT_VIDEO_IR_8BIT = 2;
+            FREENECT_VIDEO_IR_10BIT = 3;
+            FREENECT_VIDEO_IR_10BIT_PACKED = 4;
+            FREENECT_VIDEO_YUV_RGB = 5;
+            FREENECT_VIDEO_YUV_RAW = 6;
+            FREENECT_DEPTH_11BIT = 7;
+            FREENECT_DEPTH_10BIT = 8;
+            FREENECT_DEPTH_11BIT_PACKED = 9;
+            FREENECT_DEPTH_10BIT_PACKED = 10;
+        }
+        optional bytes data = 1;
+    	optional FrameType type = 2 [default = FREENECT_DEPTH_11BIT];
+        optional int32 height = 3;
+        optional int32 width = 4;
+        optional int32 channels = 5;
+        optional int32 timestamp = 6;
+        optional double wall_time = 7;
+    }
+
+    message KinectTiltState {
+        optional int32 accelerometer_x = 1;
+        optional int32 accelerometer_y = 2;
+        optional int32 accelerometer_z = 3;
+        optional int32 tilt_angle = 4;
+        optional int32 tilt_status = 5;
+        optional double wall_time = 6;
+    }
+}

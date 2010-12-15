@@ -1,6 +1,7 @@
 import cv
 import zmq
 import numpy as np
+import kinectfs_pb2
 
 
 def array2cv(a):
@@ -13,7 +14,7 @@ def array2cv(a):
                    'float64': cv.IPL_DEPTH_64F}
     try:
         nChannels = a.shape[2]
-    except:
+    except IndexError:
         nChannels = 1
     cv_im = cv.CreateImageHeader((a.shape[1], a.shape[0]),
                                  dtype2depth[str(a.dtype)],
@@ -21,6 +22,21 @@ def array2cv(a):
     cv.SetData(cv_im, a.tostring(),
                a.dtype.itemsize*nChannels*a.shape[1])
     return cv_im
+
+
+def recv(socket):
+    f = kinectfs_pb2.KinectMessage.FromString(socket.recv()).frame
+    if f.type == kinectfs_pb2.KinectMessage.KinectFrame.FREENECT_DEPTH_11BIT:
+        frame_type = 'depth'
+        data = np.fromstring(f.data,
+                             dtype=np.uint16).reshape((f.height, f.width))
+    elif f.type == kinectfs_pb2.KinectMessage.KinectFrame.FREENECT_VIDEO_RGB:
+        frame_type = 'video'
+        data = np.fromstring(f.data,
+                             dtype=np.uint8).reshape((f.height, f.width, 3))
+    else:
+        raise TypeError('Unsupported Type: %s' % (f.type))
+    return frame_type, data, f.timestamp
 
 
 def main():
@@ -32,7 +48,7 @@ def main():
     cv.NamedWindow('Depth')
     cv.NamedWindow('Video')
     while True:
-        frame_type, data, timestamp = socket.recv_pyobj()
+        frame_type, data, timestamp = recv(socket)
         if frame_type == 'depth':
             cv.ShowImage('Depth', array2cv(data.astype(np.uint8)))
         else:
