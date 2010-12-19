@@ -28,7 +28,7 @@ def address_port(doc):
     return args.address, args.port
 
 
-def address_port_path(doc):
+def address_port_file(doc):
     parser = argparse.ArgumentParser(description=doc)
     _add_address(parser)
     _add_port(parser)
